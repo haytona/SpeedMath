@@ -1,10 +1,9 @@
 /* Speed Game made by José Luis Bejarano Vásquez
-  31/08/2016 */
+   31/08/2016 */
 #define DEBUG true
 #include <Keypad.h>
 #include <LiquidCrystal_I2C.h>
-#include <Servo.h>     //zahrnutí knihovny pro ovládání servo motoru
-Servo myservo;         //každý motor má svou instanci třídy Servo
+
 LiquidCrystal_I2C lcd(0x27, 16, 2); // set the LCD address to 0x27 for a 16 chars and 2 line display
 byte sad[8] = {
   B00000,
@@ -66,11 +65,15 @@ void game_over()
 {
   temporizar = false;
   modePlay = false;
+  intento = 0;        //reset attempts
+  activar = false;    // stop timer
   lcd.clear();
-  if (sd >= 3 || mu >= 1 || md >= 1)
+  //if (sd >= 3 || mu >= 1 || md >= 1) // 30s limit
+  if ( md >=1 ) // 10 minute timeout
   {
+    //longer than 30s
     lcd.setCursor(0, 0);
-    lcd.print("Failed!  Press A");
+    lcd.print("Too slow!       ");
     lcd.setCursor(2, 1);
     lcd.print("To try again");
   }
@@ -90,8 +93,10 @@ void game_over()
     lcd.print(cu);
     delay(1000);
   }
+
 }
 
+// generate the question/problem
 void generate_random()
 {
   lcd.clear();
@@ -104,29 +109,22 @@ void generate_random()
   switch (level)
   {
     case '1':
-
       numero1 = random(1, 11); //Generates a number between un número aleatorio entre 1 and 10
       numero2 = random(1, 11); //Generates a number between un número aleatorio entre 1 and 10
       break;
 
     case '2':
-
       numero1 = random(50, 100); //Generates a number between un número aleatorio entre 50 and 99
       numero2 = random(1, 11); //Generates a number between un número aleatorio entre 1 and 10
       break;
 
-
     case '3':
-
       numero1 = random(50, 100); //Generates a number between un número aleatorio entre 1 y 99
       numero2 = random(50, 100); //Generates a number between un número aleatorio entre 1 y 10
       break;
-
-
   }
 
   numero3 = random(1, 5); //Generates a number between 1 and 4
-
 
   switch (numero3)
   {
@@ -143,7 +141,6 @@ void generate_random()
         numero2 = temp;
       }
       resultado = numero1 - numero2;
-
       break;
     case 3:
       operando = "*";
@@ -178,7 +175,6 @@ void generate_random()
   lcd.print("    ");
   lcd.setCursor(0, 1);
 
-
 }
 
 void timer()
@@ -209,8 +205,6 @@ void timer()
     lcd.print(":");
     lcd.print(cd);
     lcd.print(cu);
-
-
   }
 
 }
@@ -229,35 +223,19 @@ void verificar()
 {
   if (sNumero_jugador == sResultado)
   {
-
     lcd.setCursor(6, 0);
     lcd.print("G");
-
     intento = intento + 1;
-
     generate_random();
-
   }
-
   else
-
   {
-
-
     lcd.setCursor(0, 1);
-
     cuenta = 0;
-
     sNumero_jugador = "";
-
     lcd.setCursor(6, 1);
-    lcd.write(byte(1));
-
-
-
+    lcd.write(byte(1));//sad face
   }
-
-
 
   lcd.setCursor(8, 1);
   lcd.print("Try:");
@@ -280,40 +258,29 @@ void choose()
   lcd.print("Select level");
   lcd.setCursor(0, 1);
   lcd.print("1-E   2-M    3-H");
-
 }
 
 void conteo()
 {
   lcd.clear();
-
   lcd.setCursor(4, 0);
-
   lcd.print(sLevel);
-
-  delay(300);
+  delay(2000);
 
   lcd.clear();
 
   for (int x = 3; x >= 1; x--)
   {
     lcd.setCursor(8, 0);
-
     lcd.print(x);
-
     delay(300);
-
-
   }
 
   lcd.clear();
-
   lcd.setCursor(7, 0);
-
   lcd.print("Go");
 
   delay(600);
-
 
   generate_random();
 
@@ -332,15 +299,9 @@ void loop()
 {
   timer();
 
-
-
-
   char key = keypad.getKey();
 
   if (key)
-
-
-
   {
     //If is the select level display
     if (modePlay == false)
@@ -348,9 +309,7 @@ void loop()
       if (key == '1' || key == '2' || key == '3')
       {
         level = key;
-
         lcd.clear();
-
         lcd.setCursor(5, 1);
 
         switch (level)
@@ -364,7 +323,6 @@ void loop()
           case '3':
             sLevel = "Hard Level";
             break;
-
         } //end switch
 
         conteo();
@@ -372,11 +330,9 @@ void loop()
       } // end IF key select level
 
     } //end IF mode play off
-
     else
-      //Mode player
-
     {
+      //Mode player
 
       temporizar = true;
 
@@ -386,7 +342,6 @@ void loop()
         activar = true;
         lcd.clear();
       }
-
 
       if (key != 'A' && key != 'B' && key != 'C' && key != 'D')
       {
@@ -407,16 +362,13 @@ void loop()
 
         if (cuenta == largo)
         {
-          //        lcd.setCursor(10,1);
+          //lcd.setCursor(10,1);
           verificar();
         }
 
-
       } //End if key!=
 
-
     } // End else mode player
-
 
     if (key == 'A')
     {
@@ -424,11 +376,8 @@ void loop()
       inicio = millis();
       activar = false;
       choose();
-
     }
 
   }    //End if Key main
-
-
 
 } //End loop
