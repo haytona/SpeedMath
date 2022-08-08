@@ -91,8 +91,12 @@ void game_over()
     lcd.print(":");
     lcd.print(cd);
     lcd.print(cu);
-    delay(1000);
   }
+
+  // wait for any keypress
+  // CAUTION: blocking method. any lights/timers will pause
+  keypad.waitForKey();
+  choose();
 
 }
 
@@ -360,6 +364,7 @@ void loop()
 
         largo = sResultado.length();
 
+        // if input = length of answer then check it
         if (cuenta == largo)
         {
           //lcd.setCursor(10,1);
@@ -369,14 +374,6 @@ void loop()
       } //End if key!=
 
     } // End else mode player
-
-    if (key == 'A')
-    {
-      modePlay = false;
-      inicio = millis();
-      activar = false;
-      choose();
-    }
 
   }    //End if Key main
 
