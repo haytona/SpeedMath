@@ -5,7 +5,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <Servo.h>     //zahrnutí knihovny pro ovládání servo motoru
 Servo myservo;         //každý motor má svou instanci třídy Servo
-LiquidCrystal_I2C lcd(0x27, 20, 2); // set the LCD address to 0x27 for a 16 chars and 2 line display
+LiquidCrystal_I2C lcd(0x27, 16, 2); // set the LCD address to 0x27 for a 16 chars and 2 line display
 byte sad[8] = {
   B00000,
   B01010,
@@ -15,14 +15,6 @@ byte sad[8] = {
   B01110,
   B10001,
 };
-
-String mySSID = "robotika";       // WiFi SSID
-String myPWD = "nasratpanove"; // WiFi Password
-String myAPI = "Q2M7K0RJ8WZMD3ME";   // API Key
-String myHOST = "api.thingspeak.com";
-String myPORT = "80";
-String myFIELD = "field1"; 
-String odesilanaHodnota;
 
 unsigned long time=0;
 unsigned long inicio=0;
@@ -52,7 +44,6 @@ char cifra_jugador[4]; //Stores the number of the player
 String numero_jugador = String(); 
 String sNumero_jugador;
 
-int pos = 180;           //proměnná obsahující pozici motoru (úhel natočení)
 int cuenta=0;
 int i,j,x;
 int puntos,famas=0;
@@ -67,8 +58,8 @@ char keys[ROWS][COLS] = {
  {'7','8','9','C'},
  {'*','0','#','D'}
 };
-byte rowPins[ROWS] = {7,6,5,4}; //Filas(pines del 9 al 6)
-byte colPins[COLS] = {3,2,9,8}; //Columnas (pines del 5 al 2)
+byte rowPins[ROWS] = { 11,10,9,8 };// Connect keypad ROW0, ROW1, ROW2 and ROW3 to these Arduino pins.
+byte colPins[COLS] = {  7, 6,5,4 }; // Connect keypad COL0, COL1 and COL2 to these Arduino pins.
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 void game_over()
@@ -98,48 +89,7 @@ void game_over()
             lcd.print(cd);
             lcd.print(cu); 
             delay(1000);
-            for(pos = 180; pos >= 120; pos -= 1) //je od úhlu 0 do úhlu 180
-            {
-              myservo.write(pos);  //natočení motoru na aktuální úhel
-              delay(15);           //chvilka čekání než se motor natočí
-            }  
-            odesilanaHodnota = (((md*10)+mu)*60) + ((sd*10)+su);
-            String sendData = "GET /update?api_key="+ myAPI +"&"+ myFIELD +"="+String(odesilanaHodnota);
-            espData("AT+CIPMUX=1", 1000, DEBUG);       //Allow multiple connections
-            espData("AT+CIPSTART=0,\"TCP\",\""+ myHOST +"\","+ myPORT, 1000, DEBUG);
-            espData("AT+CIPSEND=0," +String(sendData.length()+2),1000,DEBUG);  
-            Serial1.find(">");
-            Serial1.println(sendData);
-            Serial.print("Value to be sent: ");
-            Serial.println(sendData);
-            Serial.print("size to be send: ");
-            Serial.println(sendData.length());
-            
-            espData("AT+CIPCLOSE=0",1000,DEBUG);
          }
-}
-
-String espData(String command, const int timeout, boolean debug)
-{
-  Serial.print("AT Command ==> ");
-  Serial.print(command);
-  Serial.println("     ");
-  
-  String response = "";
-  Serial1.println(command);
-  long int time = millis();
-  while ( (time + timeout) > millis())
-  {
-    while (Serial1.available())
-    {
-      char c = Serial1.read();
-      response += c;
-    }
-  }
-
-    Serial.print(response);
-
-  return response;
 }
 
 void generate_random()
@@ -267,22 +217,10 @@ void timer()
 
 void setup() 
   {
-    Serial.begin(9600);
-    Serial1.begin(115200);
-    myservo.attach(12);   //tento motor je připojen na pin 12
-    for(pos = 120; pos <= 180; pos += 1) //je od úhlu 0 do úhlu 180
-    {
-      myservo.write(pos);  //natočení motoru na aktuální úhel
-      delay(15);           //chvilka čekání než se motor natočí
-    }
-    lcd.print("Connecting to database");
-    espData("AT+RST", 1000, DEBUG);                      //Reset the ESP8266 module
-    espData("AT+CWMODE=1", 1000, DEBUG);                 //Set the ESP mode as station mode
-    espData("AT+CWJAP=\""+ mySSID +"\",\""+ myPWD +"\"", 1000, DEBUG);   //Connect to WiFi network
-    espData("AT+CIFSR", 1000, DEBUG);
-    lcd.createChar(1,sad); 
+    //Serial.begin(9600);
     lcd.init(); 
     lcd.backlight();   
+    lcd.createChar(1,sad); 
     choose();    //Displays the select level mode
   }  
 
