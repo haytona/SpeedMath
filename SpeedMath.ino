@@ -20,7 +20,7 @@ unsigned long inicio = 0;
 int m, mu = 0, md = 0; //inicializace minut
 int s, su = 0, sd = 0; //inicializace sekund
 int c, cu, cd = 0; //inicializace milisekund
-byte intento = 0;
+byte intento = 1;
 
 char level;
 boolean modePlay = false;
@@ -46,7 +46,7 @@ String sNumero_jugador;
 int cuenta = 0;
 int i, j, x;
 int puntos, famas = 0;
-int intentos = 0;
+//int intentos = 0;
 int maximo_intentos = 10;
 
 const byte ROWS = 4;
@@ -65,7 +65,7 @@ void game_over()
 {
   temporizar = false;
   modePlay = false;
-  intento = 0;        //reset attempts
+  intento = 1;        //reset attempts
   activar = false;    // stop timer
   lcd.clear();
   //if (sd >= 3 || mu >= 1 || md >= 1) // 30s limit
@@ -172,8 +172,16 @@ void generate_random()
   lcd.print(operando);
   lcd.setCursor(3, 0);
   lcd.print(numero2);
-  lcd.setCursor(12, 1);
+/*  lcd.setCursor(12, 1); // this could be the 0 at start?!
   lcd.print(cuenta);
+  lcd.print("X");
+*/
+  lcd.setCursor(intento>9? 11:12, 1);
+  //lcd.print("Try:"); // todo space it out to /10 always right justified
+  lcd.print(intento);
+  lcd.print("/10");
+
+
 
   lcd.setCursor(0, 1);
   lcd.print("    ");
@@ -228,7 +236,7 @@ void verificar()
   if (sNumero_jugador == sResultado)
   {
     lcd.setCursor(6, 0);
-    lcd.print("G");
+    lcd.print("G");         // this not shown
     intento = intento + 1;
     generate_random();
   }
@@ -241,12 +249,12 @@ void verificar()
     lcd.write(byte(1));//sad face
   }
 
-  lcd.setCursor(8, 1);
-  lcd.print("Try:");
+  lcd.setCursor(intento>9? 11:12, 1);
+  //lcd.print("Try:"); // todo space it out to /10 always right justified
   lcd.print(intento);
   lcd.print("/10");
 
-  if (intento == maximo_intentos)
+  if (intento > maximo_intentos)
   {
     game_over();  // Ends the game
   }
@@ -256,7 +264,7 @@ void verificar()
 void choose()
 {
   modePlay = false;
-  intento = 0;
+  intento = 1;
   lcd.clear();
   lcd.setCursor(2, 0);
   lcd.print("Select level");
