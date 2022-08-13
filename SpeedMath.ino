@@ -104,8 +104,6 @@ void generate_random()
   sResultado = "";
   sNumero_jugador = "";
 
-  randomSeed(analogRead(analogRead(0)));
-
   switch (level)
   {
     case '1':
@@ -220,6 +218,9 @@ void timer()
 void setup()
 {
   //Serial.begin(9600);
+
+  randomSeed(analogRead(analogRead(0)));
+
   lcd.init();
   lcd.backlight();
   lcd.createChar(1, sad);
