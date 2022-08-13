@@ -24,7 +24,6 @@ byte intento = 1;
 
 char level;
 boolean modePlay = false;
-int cifra_azar;
 int numero1 = 0;
 int numero2 = 0;
 int numero3 = 0;
@@ -44,9 +43,6 @@ String numero_jugador = String();
 String sNumero_jugador;
 
 int cuenta = 0;
-int i, j, x;
-int puntos, famas = 0;
-//int intentos = 0;
 int maximo_intentos = 10;
 
 const byte ROWS = 4;
