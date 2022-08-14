@@ -16,34 +16,30 @@ byte sad[8] = {
 };
 
 unsigned long time = 0;
-unsigned long inicio = 0;
+unsigned long inicio = 0; // beginning = time each quiz starts
 int m, mu = 0, md = 0; //inicializace minut
 int s, su = 0, sd = 0; //inicializace sekund
 int c, cu, cd = 0; //inicializace milisekund
-byte intento = 1;
 
-char level;
+
 boolean modePlay = false;
+boolean sadFace = false;
 int numero1 = 0;
 int numero2 = 0;
 int numero3 = 0;
-int temp = 0;
 int resultado;
 String operando = "";
 String sResultado;
+char level; //used in level select and generate question
 String sLevel;
-int largo = 0;
-boolean activar = false;
-boolean temporizar = false;
 
+char cifra_jugador[4]; //Stores input from player
 
-char cifra_jugador[4]; //Stores the number of the player
-
-String numero_jugador = String();
 String sNumero_jugador;
 
-int cuenta = 0;
-int maximo_intentos = 10;
+int cuenta = 0;           // cursor (used to track input/guess)
+byte intento = 1;         //question counter
+int maximo_intentos = 10; //questions in game
 
 const byte ROWS = 4;
 const byte COLS = 4;
@@ -59,10 +55,8 @@ Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 void game_over()
 {
-  temporizar = false;
   modePlay = false;
   intento = 1;        //reset attempts
-  activar = false;    // stop timer
   lcd.clear();
   //if (sd >= 3 || mu >= 1 || md >= 1) // 30s limit
   if ( md >=1 ) // 10 minute timeout
@@ -96,29 +90,26 @@ void game_over()
 
 }
 
-// generate the question/problem
+// generate the question/problem and display on screen
 void generate_random()
 {
-  lcd.clear();
-  cuenta = 0;
   sResultado = "";
   sNumero_jugador = "";
 
+  // use selected level to control range of random number
   switch (level)
   {
     case '1':
-      numero1 = random(1, 11); //Generates a number between un número aleatorio entre 1 and 10
-      numero2 = random(1, 11); //Generates a number between un número aleatorio entre 1 and 10
+      numero1 = random(1, 11); //Generates a random number between 1 and 10
+      numero2 = random(1, 11);
       break;
-
     case '2':
-      numero1 = random(50, 100); //Generates a number between un número aleatorio entre 50 and 99
-      numero2 = random(1, 11); //Generates a number between un número aleatorio entre 1 and 10
+      numero1 = random(50, 100);
+      numero2 = random(1, 11);
       break;
-
     case '3':
-      numero1 = random(50, 100); //Generates a number between un número aleatorio entre 1 y 99
-      numero2 = random(50, 100); //Generates a number between un número aleatorio entre 1 y 10
+      numero1 = random(50, 100);
+      numero2 = random(50, 100);
       break;
   }
 
@@ -134,7 +125,7 @@ void generate_random()
       operando = "-";
       if (numero1 < numero2)
       {
-        temp = numero1;
+        int temp = numero1;
         numero1 = numero2;
         numero2 = temp;
       }
@@ -160,70 +151,64 @@ void generate_random()
 
   sResultado =  String(resultado);
 
+  lcd.clear();
+
+  // print the equation top left
   lcd.setCursor(0, 0);
   lcd.print(numero1);
   lcd.setCursor(2, 0);
   lcd.print(operando);
   lcd.setCursor(3, 0);
   lcd.print(numero2);
-/*  lcd.setCursor(12, 1); // this could be the 0 at start?!
-  lcd.print(cuenta);
-  lcd.print("X");
-*/
+
+  // print the question and total-questions botto right
   lcd.setCursor(intento>9? 11:12, 1);
-  //lcd.print("Try:"); // todo space it out to /10 always right justified
   lcd.print(intento);
-  lcd.print("/10");
+  lcd.print("/");
+  lcd.print(maximo_intentos);
 
-
-
+  // clearn input
   lcd.setCursor(0, 1);
   lcd.print("    ");
-  lcd.setCursor(0, 1);
+  //lcd.setCursor(0, 1);
 
 }
 
 void timer()
 {
+  time = millis() - inicio;
 
-  if (modePlay == true)
-  {
-    time = millis() - inicio;
+  m = (time / 1000) / 60;           //Minutes
+  mu = m % 10;
+  md = (m - mu) / 10;
 
-    m = (time / 1000) / 60;           //Minutes
-    mu = m % 10;
-    md = (m - mu) / 10;
+  s = (time / 1000) % 60;           //Seconds
+  su = s % 10;
+  sd = (s - su) / 10;
 
-    s = (time / 1000) % 60;           //Seconds
-    su = s % 10;
-    sd = (s - su) / 10;
+  c = (time / 100) % 60;
+  cu = c % 10;
+  cd = (c - cu) / 10;
 
-    c = (time / 100) % 60;
-    cu = c % 10;
-    cd = (c - cu) / 10;
-
-    lcd.setCursor(8, 0);
-    lcd.print(md);
-    lcd.print(mu);
-    lcd.print(":");
-    lcd.print(sd);
-    lcd.print(su);
-    lcd.print(":");
-    lcd.print(cd);
-    lcd.print(cu);
-  }
-
-}
+  lcd.setCursor(8, 0);
+  lcd.print(md);
+  lcd.print(mu);
+  lcd.print(":");
+  lcd.print(sd);
+  lcd.print(su);
+  lcd.print(":");
+  lcd.print(cd);
+  lcd.print(cu);
+} // end timer()
 
 void setup()
 {
-  //Serial.begin(9600);
-
   randomSeed(analogRead(analogRead(0)));
 
   lcd.init();
   lcd.backlight();
   lcd.createChar(1, sad);
+
   choose();    //Displays the select level mode
 }
 
@@ -232,36 +217,35 @@ void verificar()
 {
   if (sNumero_jugador == sResultado)
   {
-    lcd.setCursor(6, 0);
-    lcd.print("G");         // this not shown
-    intento = intento + 1;
-    generate_random();
+    // correct answer
+    intento = intento + 1; // increase question number
+
+    if (intento <= maximo_intentos)
+    {
+      //generate next question
+      generate_random();
+    }
+    else
+    {
+      game_over();  // Ends the game
+    }
   }
   else
   {
-    lcd.setCursor(0, 1);
-    cuenta = 0;
+    // incorrect answer :(
     sNumero_jugador = "";
     lcd.setCursor(6, 1);
     lcd.write(byte(1));//sad face
+    sadFace = true;
   }
 
-  lcd.setCursor(intento>9? 11:12, 1);
-  //lcd.print("Try:"); // todo space it out to /10 always right justified
-  lcd.print(intento);
-  lcd.print("/10");
+} //end verificar() // check guess
 
-  if (intento > maximo_intentos)
-  {
-    game_over();  // Ends the game
-  }
-
-}
-
+// display level select "menu"
 void choose()
 {
-  modePlay = false;
-  intento = 1;
+  //modePlay = false; // shouldn't be needed as set to false by default and in game_over()
+  //intento = 1;      // shouldn't be needed as REset to 1 in game_over()
   lcd.clear();
   lcd.setCursor(2, 0);
   lcd.print("Select level");
@@ -269,12 +253,13 @@ void choose()
   lcd.print("1-E   2-M    3-H");
 }
 
+// start the game with countdown
 void conteo()
 {
   lcd.clear();
   lcd.setCursor(4, 0);
   lcd.print(sLevel);
-  delay(2000);
+  delay(1000);
 
   lcd.clear();
 
@@ -294,22 +279,22 @@ void conteo()
   generate_random();
 
   modePlay = true;
+  inicio = millis();
 
-  if (activar == false)
-  {
-    inicio = millis();
-    activar = true;
-  }
-
-}
+} // end conteo() (start game)
 
 
+// main loop
 void loop()
 {
-  timer();
+  if (modePlay == true)
+  {
+    timer();
+  }
 
   char key = keypad.getKey();
 
+  // if a key has been pressed
   if (key)
   {
     //If is the select level display
@@ -334,7 +319,7 @@ void loop()
             break;
         } //end switch
 
-        conteo();
+        conteo(); // start the game
 
       } // end IF key select level
 
@@ -343,43 +328,46 @@ void loop()
     {
       //Mode player
 
-      temporizar = true;
-
-      if (activar == false)
+      if (key == '*')
       {
-        inicio = millis();
-        activar = true;
-        lcd.clear();
+        // clear input
+        cuenta = 0;           // reset cursor
+        sNumero_jugador = ""; //reset answer as string
+        lcd.setCursor(0, 1);  //clear input
+        lcd.print("    ");
       }
-
-      if (key != 'A' && key != 'B' && key != 'C' && key != 'D')
+      else if (key != 'A' && key != 'B' && key != 'C' && key != 'D')
       {
 
         cifra_jugador[cuenta] = key;
 
-        numero_jugador = String(key);
-
-        sNumero_jugador = sNumero_jugador + numero_jugador;
+        sNumero_jugador = sNumero_jugador + String(key);
+        //sNumero_jugador.concat(key);
 
         lcd.setCursor(0 + cuenta, 1);
 
         lcd.print(cifra_jugador[cuenta]);
 
-        cuenta++;
-
-        largo = sResultado.length();
+        cuenta++; // increment cursor eg ones then tens then hundreds
 
         // if input = length of answer then check it
-        if (cuenta == largo)
+        if (cuenta == sResultado.length())
         {
-          //lcd.setCursor(10,1);
+          cuenta = 0; // reset cursor
           verificar();
+        } 
+        else if ( cuenta == 1 && sadFace )
+        {
+          //answer is longer than 1 number and
+          //we got the previous attempt wrong so
+          // clear rest of previous answer
+          lcd.print("   ");
         }
 
-      } //End if key!=
+      } //End if key!=ABCD
 
     } // End else mode player
 
-  }    //End if Key main
+  }    //End if Key pressed
 
-} //End loop
+} //End main loop
