@@ -17,23 +17,19 @@ byte sad[8] = {
 
 unsigned long time = 0;
 unsigned long inicio = 0; // beginning = time each quiz starts
-int m, mu = 0, md = 0; //inicializace minut
-int s, su = 0, sd = 0; //inicializace sekund
-int c, cu, cd = 0; //inicializace milisekund
+int mu = 0, md = 0; //inicializace minut
+int su = 0, sd = 0; //inicializace sekund
+int cu, cd = 0; //inicializace milisekund
 
 
 boolean modePlay = false;
 boolean sadFace = false;
 int numero1 = 0;
 int numero2 = 0;
-int numero3 = 0;
-int resultado;
 String operando = "";
 String sResultado;
 char level; //used in level select and generate question
 String sLevel;
-
-char cifra_jugador[4]; //Stores input from player
 
 String sNumero_jugador;
 
@@ -95,6 +91,9 @@ void generate_random()
 {
   sResultado = "";
   sNumero_jugador = "";
+
+  int resultado; // used to hold answer until converted to string
+  int numero3 = 0; // used to operando/operater until converted to string
 
   // use selected level to control range of random number
   switch (level)
@@ -176,6 +175,8 @@ void generate_random()
 
 void timer()
 {
+  int m, s, c;
+
   time = millis() - inicio;
 
   m = (time / 1000) / 60;           //Minutes
@@ -244,8 +245,6 @@ void verificar()
 // display level select "menu"
 void choose()
 {
-  //modePlay = false; // shouldn't be needed as set to false by default and in game_over()
-  //intento = 1;      // shouldn't be needed as REset to 1 in game_over()
   lcd.clear();
   lcd.setCursor(2, 0);
   lcd.print("Select level");
@@ -338,15 +337,12 @@ void loop()
       }
       else if (key != 'A' && key != 'B' && key != 'C' && key != 'D')
       {
+        // append digit to stored input
+        sNumero_jugador.concat(key);
 
-        cifra_jugador[cuenta] = key;
-
-        sNumero_jugador = sNumero_jugador + String(key);
-        //sNumero_jugador.concat(key);
-
+        // output the digit
         lcd.setCursor(0 + cuenta, 1);
-
-        lcd.print(cifra_jugador[cuenta]);
+        lcd.print( key );
 
         cuenta++; // increment cursor eg ones then tens then hundreds
 
