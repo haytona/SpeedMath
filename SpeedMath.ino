@@ -3,7 +3,7 @@
 #define DEBUG true
 #include <Keypad.h>
 #include <LiquidCrystal_I2C.h>
-  
+
 LiquidCrystal_I2C lcd(0x27, 16, 2); // set the LCD address to 0x27 for a 16 chars and 2 line display
 byte sad[8] = {
   B00000,
@@ -65,8 +65,9 @@ void game_over()
   }
   else
   {
-    lcd.setCursor(4, 0);
-    lcd.print("Victory!");
+    lcd.setCursor(1, 0);
+    lcd.print(sLevel);
+    lcd.print(" Victory!");
     lcd.setCursor(0, 1);
     lcd.print(" Time: ");
     lcd.print(md);
@@ -146,6 +147,7 @@ void generate_random()
       else  //The mod is zero
       {
         operando="\xFD"; // division
+        // search HD44780.pdf see table 4, pg 17 for charmap
         // see https://arduino.stackexchange.com/questions/46828/how-to-show-the-%C2%BA-character-in-a-lcd
         // division symbol was 1111 1101 which converts to FD hex
         resultado = numero1 / numero2;
@@ -262,6 +264,7 @@ void conteo()
   lcd.clear();
   lcd.setCursor(4, 0);
   lcd.print(sLevel);
+  lcd.print(" Level");
   delay(1000);
 
   lcd.clear();
@@ -312,13 +315,13 @@ void loop()
         switch (level)
         {
           case '1':
-            sLevel = "Easy Level";
+            sLevel = "Easy";
             break;
           case '2':
-            sLevel = "Medium Level";
+            sLevel = "Medium";
             break;
           case '3':
-            sLevel = "Hard Level";
+            sLevel = "Hard";
             break;
         } //end switch
 
