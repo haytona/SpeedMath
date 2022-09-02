@@ -136,7 +136,6 @@ void generate_random()
       resultado = numero1 * numero2;
       break;
     case 4:
-      operando = "/";
       resultado = numero1 % numero2;
       // only use divison if no remainder, otherwise use multiplication
       if (resultado != 0) //If not is zero the mod
